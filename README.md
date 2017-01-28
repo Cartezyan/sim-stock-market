@@ -20,6 +20,7 @@ Before continuing, it's probably worth pointing out (if you haven't realized alr
 To start, here are the high-level concepts that will be represented in the system:
 
 * **The Market (aka the Exchange)**:  this is where trades occur; in other words, where stocks are bought and sold.
+  * **The Ledger**: the history of all trades that have occurred, how many shares, what cost, and who was involved
 * **The Stocks**: these are the commodities being traded
 * **The Trader**: this is the actor placing the trades  _(can be either automated/AI or an actual person)_
 
@@ -34,7 +35,7 @@ Technically speaking, here are the parts that are going to compose the trading s
 * **Market Administration**: a back-office system to enable management (adding and removing) of stocks as well as the manipulation of their attributes (prices, evaluations, etc.)
   * **API**: The automatable, non-UI API that exposes all back-office functionality
   * **UI**: the UI that consumes the API so that people can interact with it
-* **Market Monitoring/Analysis**: real-time (read-only) monitoring and analysis of all trading activity.  Will probably (eventually) have a couple of parts:
+* **Market History/Monitoring/Analysis**: real-time (read-only) monitoring and analysis of all trading activity.  Will probably (eventually) have a couple of parts:
   * **Data Lake & Big Data processing**: Oh yeah.
   * **API**: an API that exposes ability to query the data lake
   * **UI**: awesome dashboard with all sorts of impressive animated charts and gauges and other real-timey things
