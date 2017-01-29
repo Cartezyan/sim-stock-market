@@ -1,6 +1,6 @@
-# The Simple Complex Demo application
+# The Simulated Stock Market
 
-This is the "simple complex" application - a highly-distributed, loosely-coupled, cloud-ready, and whatever other buzzword-of-the-day application created as a sandbox for exercising new technologies, techniques, patterns, practices, or tools.  It's meant to be complex enough to support more advanced development techniques, yet simple enough to easily understand and modify wherever is needed.
+The Simulated Stock Market application is a highly-distributed, loosely-coupled, cloud-ready, and whatever other buzzword-of-the-day application created as a sandbox for exercising new technologies, techniques, patterns, practices, or tools.  It's meant to be complex enough to support more advanced development techniques, yet simple enough to easily understand and modify wherever is needed.
 
 Nothing is actually built yet.  In fact, I've only just started thinking about this for the past few weeks.  But, the project will evolve in the open right here.
 
