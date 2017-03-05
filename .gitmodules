@@ -1,6 +1,0 @@
-[submodule "Exchange"]
-	path = Exchange
-	url = https://github.com/jchadwick/sim-stock-market_exchange
-[submodule "TradeBots"]
-	path = TradeBots
-	url = https://github.com/jchadwick/sim-stock-market_trade-bots
