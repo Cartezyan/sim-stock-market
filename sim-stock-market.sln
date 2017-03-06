@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26206.0
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Market", "src\Market\Market.csproj", "{D93D33F9-0377-46A7-9EFF-FD8342BAA046}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderBot", "src\TraderBot\TraderBot.csproj", "{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8CC9C03F-688A-4A8F-8B19-75BA6162EB1B}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.ci.build.yml = docker-compose.ci.build.yml
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Debug|x64.ActiveCfg = Debug|x64
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Debug|x64.Build.0 = Debug|x64
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Debug|x86.ActiveCfg = Debug|x86
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Debug|x86.Build.0 = Debug|x86
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Release|x64.ActiveCfg = Release|x64
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Release|x64.Build.0 = Release|x64
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Release|x86.ActiveCfg = Release|x86
+		{D93D33F9-0377-46A7-9EFF-FD8342BAA046}.Release|x86.Build.0 = Release|x86
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Debug|x64.ActiveCfg = Debug|x64
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Debug|x64.Build.0 = Debug|x64
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Debug|x86.ActiveCfg = Debug|x86
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Debug|x86.Build.0 = Debug|x86
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Release|x64.ActiveCfg = Release|x64
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Release|x64.Build.0 = Release|x64
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Release|x86.ActiveCfg = Release|x86
+		{D3063C78-B06B-40E9-96FA-B6E03C5C4D55}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

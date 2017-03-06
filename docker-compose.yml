@@ -1,0 +1,24 @@
+version: '2.1'
+
+services:
+  
+  market:
+    image: market
+    build:
+      context: ./src/Market
+      dockerfile: Dockerfile
+    environment:
+      QueueHostName: message_queue
+      QueueName: stockmarket
+
+  traderbot:
+    image: traderbot
+    build:
+      context: ./src/TraderBot
+      dockerfile: Dockerfile
+    environment:
+      QueueHostName: message_queue
+      QueueName: stockmarket
+  
+  message_queue:
+    image: rabbitmq:alpine
