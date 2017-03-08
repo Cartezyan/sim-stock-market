@@ -2,41 +2,58 @@
 using RabbitMQ.Client;
 using System.Text;
 using System.Threading;
+using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 namespace SimStockMarket.TraderBot
 {
     class Program
     {
-        static readonly string QueueHostName = Environment.GetEnvironmentVariable("QueueHostName") ?? "localhost";
-        static readonly string QueueName = Environment.GetEnvironmentVariable("QueueName") ?? "stockmarket";
+        static readonly IConfiguration Config;
+
+        static Program()
+        {
+            Config = new ConfigurationBuilder()
+                        .AddInMemoryCollection(new Dictionary<string, string>
+                        {
+                            { "QueueHostName", "localhost" },
+                            { "QueueName", "stockmarket" },
+                        })
+                        .AddEnvironmentVariables()
+                        .Build();
+        }
 
         static void Main(string[] args)
         {
             Console.WriteLine("Starting Trade Bot...");
 
-            Console.WriteLine($"Connecting to message host {QueueHostName}...");
+            var queueHost = Config["QueueHostName"];
+            var queueName = Config["QueueName"];
 
-            using (var connection = Connect(QueueHostName))
+            Debug.WriteLine($"Connecting to message host {queueHost}...");
+
+            using (var connection = Connect(queueHost))
             using (var channel = connection.CreateModel())
             {
-                channel.QueueDeclare(queue: QueueName,
+                channel.QueueDeclare(queue: queueName,
                      durable: false,
                      exclusive: false,
                      autoDelete: false,
                      arguments: null);
 
-                int tradeCounter = 0;
+                var trader = new TradeGenerator(Environment.MachineName);
 
                 while (true)
                 {
-                    var message = $"== New Trade {++tradeCounter} == ";
+                    var message = trader.GenerateMessage();
 
                     channel.BasicPublish(exchange: "",
-                                         routingKey: QueueName,
+                                         routingKey: queueName,
                                          basicProperties: null,
                                          body: Encoding.UTF8.GetBytes(message));
 
-                    Console.WriteLine($" [{QueueName}] Sent: {message}...");
+                    Debug.WriteLine($" [{queueName}] Sent: {message}...");
 
                     Thread.Sleep(1000);
                 }

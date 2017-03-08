@@ -3,5 +3,5 @@ echo "Rebuilding application..."
 
 echo "Executing application"
 docker-compose up --build -d
-docker-compose scale market=5
+docker-compose scale market=1
 docker-compose up 
