@@ -8,8 +8,7 @@ services:
       context: ./src/Market
       dockerfile: Dockerfile
     environment:
-      QueueHostName: message_queue
-      QueueName: stockmarket
+      QueueHostName: queue
 
   traderbot:
     image: traderbot
@@ -17,8 +16,7 @@ services:
       context: ./src/TraderBot
       dockerfile: Dockerfile
     environment:
-      QueueHostName: message_queue
-      QueueName: stockmarket
+      QueueHostName: queue
   
-  message_queue:
+  queue:
     image: rabbitmq:alpine

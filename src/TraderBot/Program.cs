@@ -1,87 +1,43 @@
 ﻿using System;
-using RabbitMQ.Client;
-using System.Text;
-using System.Threading;
-using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using Microsoft.Extensions.Configuration;
 
 namespace SimStockMarket.TraderBot
 {
     class Program
     {
-        static readonly IConfiguration Config;
-
-        static Program()
+        static void Main(string[] args)
         {
-            Config = new ConfigurationBuilder()
+            var traderId = Environment.MachineName;
+
+            Console.WriteLine($"Starting Trade Bot {traderId}...");
+
+            var config = new ConfigurationBuilder()
                         .AddInMemoryCollection(new Dictionary<string, string>
                         {
                             { "QueueHostName", "localhost" },
-                            { "QueueName", "stockmarket" },
                         })
                         .AddEnvironmentVariables()
                         .Build();
-        }
 
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Starting Trade Bot...");
-
-            var queueHost = Config["QueueHostName"];
-            var queueName = Config["QueueName"];
+            var queueHost = config["QueueHostName"];
 
             Debug.WriteLine($"Connecting to message host {queueHost}...");
 
-            using (var connection = Connect(queueHost))
-            using (var channel = connection.CreateModel())
+            using (var connection = MessageQueue.Connect(queueHost))
+            using (var queue = MessageQueue.Connect(connection, "stockmarket"))
             {
-                channel.QueueDeclare(queue: queueName,
-                     durable: false,
-                     exclusive: false,
-                     autoDelete: false,
-                     arguments: null);
-
-                var trader = new TradeGenerator(Environment.MachineName);
+                var trader = new TradeGenerator(traderId);
 
                 while (true)
                 {
-                    var message = trader.GenerateMessage();
+                    var trade = trader.GenerateTrade();
 
-                    channel.BasicPublish(exchange: "",
-                                         routingKey: queueName,
-                                         basicProperties: null,
-                                         body: Encoding.UTF8.GetBytes(message));
-
-                    Debug.WriteLine($" [{queueName}] Sent: {message}...");
+                    queue.Publish(trade.Type.ToString().ToLower(), trade);
 
                     Thread.Sleep(1000);
-                }
-            }
-        }
-
-        static IConnection Connect(string host)
-        {
-            var factory = new ConnectionFactory()
-            {
-                AutomaticRecoveryEnabled = true,
-                HostName = host
-            };
-
-            var connectionDelay = TimeSpan.FromSeconds(1);
-
-            while (true)
-            {
-                try
-                {
-                    return factory.CreateConnection();
-                }
-                catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException ex)
-                {
-                    Console.WriteLine($"Failed to connect: {ex.Message}");
-                    Console.WriteLine($"Waiting {connectionDelay.TotalSeconds} seconds to try again...");
-                    Thread.Sleep(connectionDelay);
-                    connectionDelay += connectionDelay;
                 }
             }
         }
