@@ -23,7 +23,7 @@ namespace SimStockMarket.Market.Handlers
 
             if (bid == null)
             {
-                Debug.WriteLine($"No buyer for {bid.Symbol} @ {bid.Price} - ask submitted.");
+                Debug.WriteLine($"No buyer for {ask.Symbol} @ {ask.Price} - ask submitted.");
                 _market.SubmitAsk(ask);
             }
             else
