@@ -10,7 +10,7 @@ namespace SimStockMarket.TraderBot
     {
         static void Main(string[] args)
         {
-            var traderId = Environment.MachineName;
+            var traderId = Guid.NewGuid().ToString("n");
 
             Console.WriteLine($"Starting Trade Bot {traderId}...");
 

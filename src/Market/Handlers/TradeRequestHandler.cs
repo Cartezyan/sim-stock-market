@@ -26,8 +26,8 @@ namespace SimStockMarket.Market.Handlers
 
             var trade = _ledger.ExecuteTrade(bid, ask);
 
-            _market.ResolveAsk(ask, trade.Id);
-            _market.ResolveBid(bid, trade.Id);
+            _market.Resolve(ask);
+            _market.Resolve(bid);
 
             Console.WriteLine($"[TRADE] {trade.Symbol} @ {trade.Price} ({trade.SellerId} => {trade.BuyerId})");
         }

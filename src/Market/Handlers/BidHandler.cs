@@ -21,10 +21,10 @@ namespace SimStockMarket.Market.Handlers
 
             var ask = _market.FindSeller(bid);
 
-            if (ask == null)
+            if (ask == null || bid.TraderId == ask.TraderId)
             {
                 Debug.WriteLine($"No seller for {bid.Symbol} @ {bid.Price} - bid submitted.");
-                _market.SubmitBid(bid);
+                _market.SubmitOffer(bid);
             }
             else
             {
