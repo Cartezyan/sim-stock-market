@@ -1,6 +1,7 @@
 ﻿using System;
+using MongoDB.Bson.Serialization.Attributes;
 
-namespace SimStockMarket.Market
+namespace SimStockMarket.Market.Contracts
 {
     public enum TradeOfferKind
     {
@@ -8,8 +9,10 @@ namespace SimStockMarket.Market
         Ask,
     }
 
-    public abstract class TradeOffer
+    [BsonKnownTypes(typeof(Ask), typeof(Bid))]
+    public class TradeOffer
     {
+        public MongoDB.Bson.ObjectId _id;
         internal DateTime Timestamp { get; set; }
         public string TraderId { get; set; }
         public string Symbol { get; set; }

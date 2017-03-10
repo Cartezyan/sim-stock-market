@@ -2,12 +2,30 @@
 using System.Collections.Generic;
 using System.Linq;
 using SimStockMarket.Market.Contracts;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace SimStockMarket.Market
 {
     public class StockMarket
     {
-        private readonly ICollection<TradeOffer> Offers = new List<TradeOffer>();
+        private readonly IMongoDatabase _db;
+
+        private IMongoCollection<TradeOffer> _offers;
+
+        protected IMongoCollection<TradeOffer> Offers
+        {
+            get
+            {
+                _offers = (_offers == null) ? _db.GetCollection<TradeOffer>("offers") : _offers;
+                return _offers;
+            }
+        }
+
+        public StockMarket(IMongoDatabase db)
+        {
+            _db = db;
+        }
 
         public Bid FindBuyer(Ask ask)
         {
@@ -29,15 +47,15 @@ namespace SimStockMarket.Market
 
         public IEnumerable<TradeOffer> GetOffersBySymbol(string symbol)
         {
-            return Offers.Where(x => string.Equals(x.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
+            return Offers.AsQueryable().Where(x => x.Symbol == symbol);
         }
 
         public void Resolve(TradeOffer offer)
         {
-            var existing = GetExistingOffer(offer);
-
-            if (existing != null)
-                Offers.Remove(existing);
+            Offers.DeleteOne(x =>
+                  x.TraderId == offer.TraderId
+                && x.Symbol == offer.Symbol
+            );
         }
 
         public void SubmitOffer(TradeOffer offer)
@@ -53,21 +71,14 @@ namespace SimStockMarket.Market
 
             offer.Timestamp = DateTime.UtcNow;
 
-            var existing = GetExistingOffer(offer);
-
-            if (existing != null)
-            {
-                Offers.Remove(existing);
-            }
-
-            Offers.Add(offer);
-        }
-
-        private TradeOffer GetExistingOffer(TradeOffer offer)
-        {
-            var existing = GetOffersBySymbol(offer.Symbol)
-                            .FirstOrDefault(x => x.TraderId == offer.TraderId);
-            return existing;
+            // If I knew how to actually use MongoDB, I could get rid of this conditional
+            if (offer._id == ObjectId.Empty)
+                Offers.InsertOne(offer);
+            else
+                Offers.ReplaceOne(
+                    x => x.Symbol == offer.Symbol && x.TraderId == offer.TraderId,
+                    offer
+                );
         }
     }
 }

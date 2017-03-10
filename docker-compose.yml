@@ -9,6 +9,7 @@ services:
       dockerfile: Dockerfile
     environment:
       QueueHostName: queue
+      MongoUrl: mongodb://mongodb:27017
 
   traderbot:
     image: traderbot
@@ -20,3 +21,6 @@ services:
   
   queue:
     image: rabbitmq:alpine
+
+  mongodb:
+    image: mongo

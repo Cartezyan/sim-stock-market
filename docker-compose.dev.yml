@@ -1,0 +1,13 @@
+version: '2.1'
+
+services:
+  
+  queue:
+    image: rabbitmq:alpine
+    ports:
+      - "5672:5672"
+
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"

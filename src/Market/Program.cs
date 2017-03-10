@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SimStockMarket.Market.Handlers;
 using SimStockMarket.Market.Contracts;
+using MongoDB.Driver;
 
 namespace SimStockMarket.Market
 {
@@ -36,6 +37,8 @@ namespace SimStockMarket.Market
         {
             return new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string> {
+                    { "MongoUrl", "mongodb://localhost:27017" },
+                    { "MongoDatabase", "stockmarket" },
                     { "QueueHostName", "localhost" },
                 })
                 .AddEnvironmentVariables()
@@ -45,12 +48,22 @@ namespace SimStockMarket.Market
         static IServiceProvider ConfigureServices(IConfiguration config)
         {
             return new ServiceCollection()
+                .AddSingleton<IConfiguration>(config)
+                .AddSingleton<IMongoDatabase>(ConnectToMongoDatabase)
                 .AddSingleton<StockMarket>()
                 .AddSingleton<TradeLedger>()
                 .AddTransient<AskHandler>()
                 .AddTransient<BidHandler>()
                 .AddTransient<TradeRequestHandler>()
                 .BuildServiceProvider();
+        }
+
+        static IMongoDatabase ConnectToMongoDatabase(IServiceProvider services)
+        {
+            var config = services.GetService<IConfiguration>();
+            var mongodb = new MongoClient(config["MongoUrl"]);
+            var db = mongodb.GetDatabase(config["MongoDatabase"]);
+            return db;
         }
     }
 }
