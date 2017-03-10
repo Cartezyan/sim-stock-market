@@ -17,6 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Util\Util.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update=".dockerignore">
       <DependentUpon>Dockerfile</DependentUpon>
     </None>
