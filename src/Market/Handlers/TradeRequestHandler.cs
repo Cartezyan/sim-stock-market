@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Serilog;
 using SimStockMarket.Market.Contracts;
 
 namespace SimStockMarket.Market.Handlers
 {
     public class TradeRequestHandler : Handler<TradeRequest>
     {
+        private static ILogger Log = Serilog.Log.ForContext<BidHandler>();
+
         private readonly StockMarket _market;
         private readonly TradeLedger _ledger;
 
@@ -21,6 +23,8 @@ namespace SimStockMarket.Market.Handlers
 
         public override void Handle(TradeRequest request)
         {
+            Log.Verbose("Processing {@tradeRequest}...", request);
+
             var ask = request?.Ask;
             var bid = request?.Bid;
 
@@ -28,8 +32,6 @@ namespace SimStockMarket.Market.Handlers
 
             _market.Resolve(ask);
             _market.Resolve(bid);
-
-            Console.WriteLine($"[TRADE] {trade.Symbol} @ {trade.Price} ({trade.SellerId} => {trade.BuyerId})");
         }
     }
 }

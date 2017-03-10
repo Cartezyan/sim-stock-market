@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Serilog;
 
 namespace SimStockMarket
 {
@@ -23,6 +23,9 @@ namespace SimStockMarket
         {
             if(_channel != null)
             {
+                if(_channel.IsOpen)
+                    _channel.Close();
+
                 _channel.Dispose();
             }
         }
@@ -36,14 +39,14 @@ namespace SimStockMarket
                                  basicProperties: null,
                                  body: Encoding.UTF8.GetBytes(body));
 
-            Debug.WriteLine($"***TX*** ({_exchange}:{action}) {body}");
+            Log.Verbose("***TX*** ({exchange}:{action}) {body}", _exchange, action, body);
         }
 
         public void Subscribe<TMessage>(Action<TMessage> handler)
         {
             var routingKey = typeof(TMessage).Name.ToLower();
 
-            Debug.WriteLine($"Subscribing to queue {_exchange}:{routingKey}...");
+            Log.Debug("Subscribing to queue {exchange}:{routingKey}...", _exchange, routingKey);
 
             _channel.QueueDeclare(queue: _exchange,
                  durable: true,
@@ -62,7 +65,8 @@ namespace SimStockMarket
                 {
                     var body = Encoding.UTF8.GetString(ea.Body);
 
-                    Debug.WriteLine($"***RX*** ({ea.Exchange}:{ea.RoutingKey}) {body}");
+                    Log.Verbose("***RX*** ({exchange}:{routingKey}) {body}", 
+                                ea.Exchange, ea.RoutingKey, body);
 
                     var message = JsonConvert.DeserializeObject<TMessage>(body);
 
@@ -70,7 +74,7 @@ namespace SimStockMarket
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error handling message:\r\n{ex}");
+                    Log.Error(ex, "Error handling message");
                 }
             };
 
@@ -83,7 +87,7 @@ namespace SimStockMarket
         {
             var channel = connection.CreateModel();
 
-            Debug.WriteLine($"Connecting to exchange {exchange}...");
+            Log.Verbose("Connecting to exchange {exchange}...", exchange);
 
             channel.ExchangeDeclare(exchange: exchange, type: "direct");
 
@@ -104,12 +108,13 @@ namespace SimStockMarket
             {
                 try
                 {
-                    return factory.CreateConnection();
+                    var connection = factory.CreateConnection();
+                    Log.Information("Connected to {host}", host);
+                    return connection;
                 }
-                catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException ex)
+                catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException)
                 {
-                    Console.WriteLine($"Failed to connect: {ex.Message}");
-                    Console.WriteLine($"Waiting {connectionDelay.TotalSeconds} seconds to try again...");
+                    Log.Warning("Failed to connect; retrying in {delay} seconds...", connectionDelay.TotalSeconds);
                     Thread.Sleep(connectionDelay);
                     connectionDelay += connectionDelay;
                 }

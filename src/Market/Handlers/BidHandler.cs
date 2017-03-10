@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Serilog;
 using SimStockMarket.Market.Contracts;
-using System.Diagnostics;
 
 namespace SimStockMarket.Market.Handlers
 {
     public class BidHandler : Handler<Bid>
     {
+        private static ILogger Log = Serilog.Log.ForContext<BidHandler>();
+
         private readonly StockMarket _market;
         private readonly TradeRequestHandler _tradeHandler;
 
@@ -17,18 +18,18 @@ namespace SimStockMarket.Market.Handlers
 
         public override void Handle(Bid bid)
         {
-            Console.WriteLine($"[BID] {bid.Symbol} @ {bid.Price} ({bid.TraderId})");
+            Log.Verbose("Processing {@bid}...", bid);
 
             var ask = _market.FindSeller(bid);
 
             if (ask == null || bid.TraderId == ask.TraderId)
             {
-                Debug.WriteLine($"No seller for {bid.Symbol} @ {bid.Price} - bid submitted.");
+                Log.Debug("No seller for {symbol} @ {price} - bid submitted.", bid.Symbol, bid.Price);
                 _market.SubmitOffer(bid);
             }
             else
             {
-                Debug.WriteLine($"Found seller for {ask.Symbol} @ {ask.Price}");
+                Log.Debug("Found seller for {symbol} @ {price} - executing trade", ask.Symbol, ask.Price);
                 _tradeHandler.Handle(ask, bid);
             }
         }

@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using SimStockMarket.Market.Handlers;
 using SimStockMarket.Market.Contracts;
 using MongoDB.Driver;
+using Serilog;
+using Serilog.Events;
 
 namespace SimStockMarket.Market
 {
@@ -13,9 +15,21 @@ namespace SimStockMarket.Market
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("==== Stock Market ====");
-
             var config = Configure();
+
+            var logLevel = LogEventLevel.Warning;
+
+            Enum.TryParse(config["LogLevel"], out logLevel);
+
+            var logLevelSwitch = new Serilog.Core.LoggingLevelSwitch(logLevel)
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.ControlledBy(logLevelSwitch)
+                .WriteTo.LiterateConsole()
+                .CreateLogger();
+
+            Log.Information("==== Stock Market ====");
+
             var services = ConfigureServices(config);
 
             using (var connection = MessageQueue.Connect(config["QueueHostName"]))
@@ -24,7 +38,7 @@ namespace SimStockMarket.Market
                 queue.Subscribe<Ask>(ask => services.GetService<AskHandler>().Handle(ask));
                 queue.Subscribe<Bid>(bid => services.GetService<BidHandler>().Handle(bid));
 
-                Console.WriteLine("Market started");
+                Log.Information("Market started");
 
                 while (true)
                 {
@@ -40,6 +54,7 @@ namespace SimStockMarket.Market
                     { "MongoUrl", "mongodb://localhost:27017" },
                     { "MongoDatabase", "stockmarket" },
                     { "QueueHostName", "localhost" },
+                    { "LogLevel", LogEventLevel.Information.ToString() },
                 })
                 .AddEnvironmentVariables()
                 .Build();

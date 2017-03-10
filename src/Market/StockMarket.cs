@@ -4,11 +4,14 @@ using System.Linq;
 using SimStockMarket.Market.Contracts;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using Serilog;
 
 namespace SimStockMarket.Market
 {
     public class StockMarket
     {
+        private static ILogger Log = Serilog.Log.ForContext<StockMarket>();
+
         private readonly IMongoDatabase _db;
 
         private IMongoCollection<TradeOffer> _offers;
@@ -29,6 +32,8 @@ namespace SimStockMarket.Market
 
         public Bid FindBuyer(Ask ask)
         {
+            Log.Verbose("Finding buyer for {@ask}...", ask);
+
             return GetOffersBySymbol(ask?.Symbol)
                 .OfType<Bid>()
                 .OrderBy(x => x.Price)
@@ -38,6 +43,8 @@ namespace SimStockMarket.Market
 
         public Ask FindSeller(Bid bid)
         {
+            Log.Verbose("Finding seller for {@bid}...", bid);
+
             return GetOffersBySymbol(bid?.Symbol)
                 .OfType<Ask>()
                 .OrderByDescending(x => x.Price)
@@ -52,10 +59,14 @@ namespace SimStockMarket.Market
 
         public void Resolve(TradeOffer offer)
         {
+            Log.Verbose("Resolving {@offer}...", offer);
+
             Offers.DeleteOne(x =>
                   x.TraderId == offer.TraderId
                 && x.Symbol == offer.Symbol
             );
+
+            Log.Debug("Resolved {@offer}", offer);
         }
 
         public void SubmitOffer(TradeOffer offer)
@@ -79,6 +90,8 @@ namespace SimStockMarket.Market
                     x => x.Symbol == offer.Symbol && x.TraderId == offer.TraderId,
                     offer
                 );
+
+            Log.Information("{@offer}", offer);
         }
     }
 }
