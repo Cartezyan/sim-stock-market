@@ -24,7 +24,7 @@ namespace SimStockMarket.TraderBot
 
             Enum.TryParse(config["LogLevel"], out logLevel);
 
-            var logLevelSwitch = new Serilog.Core.LoggingLevelSwitch(logLevel)
+            var logLevelSwitch = new Serilog.Core.LoggingLevelSwitch(logLevel);
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.ControlledBy(logLevelSwitch)
