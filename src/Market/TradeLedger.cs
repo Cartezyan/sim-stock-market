@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Serilog;
-using SimStockMarket.Market.Contracts;
 
 namespace SimStockMarket.Market
 {

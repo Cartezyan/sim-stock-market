@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Market.Common\Market.Common.csproj" />
     <ProjectReference Include="..\Util\Util.csproj" />
   </ItemGroup>
 

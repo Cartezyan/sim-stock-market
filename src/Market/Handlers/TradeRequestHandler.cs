@@ -1,5 +1,4 @@
 ﻿using Serilog;
-using SimStockMarket.Market.Contracts;
 
 namespace SimStockMarket.Market.Handlers
 {
@@ -7,10 +6,10 @@ namespace SimStockMarket.Market.Handlers
     {
         private static ILogger Log = Serilog.Log.ForContext<BidHandler>();
 
-        private readonly StockMarket _market;
+        private readonly IStockMarket _market;
         private readonly TradeLedger _ledger;
 
-        public TradeRequestHandler(StockMarket market, TradeLedger ledger)
+        public TradeRequestHandler(IStockMarket market, TradeLedger ledger)
         {
             _market = market;
             _ledger = ledger;
@@ -30,8 +29,9 @@ namespace SimStockMarket.Market.Handlers
 
             var trade = _ledger.ExecuteTrade(bid, ask);
 
-            _market.Resolve(ask);
-            _market.Resolve(bid);
+            _market.DeleteOffer(ask);
+            _market.DeleteOffer(bid);
         }
+
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace SimStockMarket.Market.Contracts
+﻿namespace SimStockMarket.Market
 {
     public class TradeRequest
     {

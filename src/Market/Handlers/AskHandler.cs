@@ -1,5 +1,6 @@
-﻿using Serilog;
-using SimStockMarket.Market.Contracts;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Serilog;
 
 namespace SimStockMarket.Market.Handlers
 {
@@ -7,10 +8,10 @@ namespace SimStockMarket.Market.Handlers
     {
         private static ILogger Log = Serilog.Log.ForContext<AskHandler>();
 
-        private readonly StockMarket _market;
+        private readonly IStockMarket _market;
         private readonly TradeRequestHandler _tradeHandler;
 
-        public AskHandler(StockMarket market, TradeRequestHandler tradeHandler)
+        public AskHandler(IStockMarket market, TradeRequestHandler tradeHandler)
         {
             _market = market;
             _tradeHandler = tradeHandler;
@@ -20,7 +21,7 @@ namespace SimStockMarket.Market.Handlers
         {
             Log.Verbose("Processing {@ask}...", ask);
 
-            var bid = _market.FindBuyer(ask);
+            var bid = FindBuyer(ask);
 
             if (bid == null || bid.TraderId == ask.TraderId)
             {
@@ -34,5 +35,15 @@ namespace SimStockMarket.Market.Handlers
             }
         }
 
+        internal Bid FindBuyer(Ask ask)
+        {
+            Log.Verbose("Finding buyer for {@ask}...", ask);
+
+            return _market.GetOffersBySymbol(ask?.Symbol)
+                .OfType<Bid>()
+                .OrderBy(x => x.Price)
+                .ThenBy(x => x.Timestamp)
+                .FirstOrDefault(x => x.Price >= ask?.Price);
+        }
     }
 }

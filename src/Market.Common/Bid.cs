@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SimStockMarket.Market.Contracts
+namespace SimStockMarket.Market
 {
     public class Bid : TradeOffer
     {

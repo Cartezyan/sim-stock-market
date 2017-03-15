@@ -2,6 +2,18 @@ version: '2.1'
 
 services:
   
+  market_api:
+    image: market_api
+    build:
+      context: ./src/Market.Api
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      LogLevel: Information
+      MongoUrl: mongodb://mongodb:27017
+      MongoDatabase: stockmarket
+
   market:
     image: market
     build:
@@ -11,6 +23,7 @@ services:
       LogLevel: Information
       QueueHostName: queue
       MongoUrl: mongodb://mongodb:27017
+      MongoDatabase: stockmarket
 
   traderbot:
     image: traderbot

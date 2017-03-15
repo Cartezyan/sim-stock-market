@@ -4,7 +4,7 @@ using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SimStockMarket.Market.Handlers;
-using SimStockMarket.Market.Contracts;
+using SimStockMarket.Market;
 using MongoDB.Driver;
 using Serilog;
 using Serilog.Events;
@@ -65,7 +65,7 @@ namespace SimStockMarket.Market
             return new ServiceCollection()
                 .AddSingleton<IConfiguration>(config)
                 .AddSingleton<IMongoDatabase>(ConnectToMongoDatabase)
-                .AddSingleton<StockMarket>()
+                .AddSingleton<IStockMarket, StockMarket>()
                 .AddSingleton<TradeLedger>()
                 .AddTransient<AskHandler>()
                 .AddTransient<BidHandler>()
