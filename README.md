@@ -42,3 +42,24 @@ Technically speaking, here are the parts that are going to compose the trading s
 
 
 Note that since this example is intended to evolve and become more complex over time, this list is bound to change.
+
+
+## Development
+
+Take the following steps to run the solution
+
+### Executing the solution via Docker
+
+1. Make sure you have Docker (and docker-compose) installed
+1. Execute `scripts\run.ps1`
+
+*Note: Step #1 will build the application (including restoring packages) and create the Docker container(s)*
+
+### Debugging the application
+
+If you are looking to attach a debugger to running code, you won't want to do it in a Docker container.  
+
+Instead, you'll need to:
+1. Start only the dev services using `scripts\start-dev.ps1`
+1. Load the code and execute/attach in your favorite debugger
+
