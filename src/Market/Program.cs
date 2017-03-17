@@ -66,7 +66,6 @@ namespace SimStockMarket.Market
                 .AddSingleton<IConfiguration>(config)
                 .AddSingleton<IMongoDatabase>(ConnectToMongoDatabase)
                 .AddSingleton<IStockMarket, StockMarket>()
-                .AddSingleton<TradeLedger>()
                 .AddTransient<AskHandler>()
                 .AddTransient<BidHandler>()
                 .AddTransient<TradeRequestHandler>()

@@ -24,7 +24,6 @@ namespace SimStockMarket.Market
     {
         private static ILogger Log = Serilog.Log.ForContext<IStockMarket>();
 
-        private readonly IDictionary<Type, object> Collections = new Dictionary<Type, object>();
         private readonly IMongoDatabase _db;
 
         public StockMarket(IMongoDatabase db)
@@ -34,7 +33,7 @@ namespace SimStockMarket.Market
 
         public IEnumerable<TradeOffer> GetOffersBySymbol(string symbol)
         {
-            return Collection<TradeOffer>().AsQueryable().Where(x => x.Symbol == symbol);
+            return _db.GetCollection<TradeOffer>().AsQueryable().Where(x => x.Symbol == symbol);
         }
 
         public void AddSymbol(StockSymbol symbol)
@@ -42,14 +41,14 @@ namespace SimStockMarket.Market
             var existing = GetSymbol(symbol.Symbol);
 
             if(existing == null)
-                Collection<StockSymbol>().InsertOne(symbol);
+                _db.GetCollection<StockSymbol>().InsertOne(symbol);
         }
 
         public void DeleteOffer(TradeOffer offer)
         {
             Log.Verbose("Resolving {@offer}...", offer);
 
-            Collection<TradeOffer>().DeleteOne(x =>
+            _db.GetCollection<TradeOffer>().DeleteOne(x =>
                   x.TraderId == offer.TraderId
                 && x.Symbol == offer.Symbol
             );
@@ -72,9 +71,9 @@ namespace SimStockMarket.Market
 
             // If I knew how to actually use MongoDB, I could get rid of this conditional
             if (offer._id == ObjectId.Empty)
-                Collection<TradeOffer>().InsertOne(offer);
+                _db.GetCollection<TradeOffer>().InsertOne(offer);
             else
-                Collection<TradeOffer>().ReplaceOne(
+                _db.GetCollection<TradeOffer>().ReplaceOne(
                     x => x.Symbol == offer.Symbol && x.TraderId == offer.TraderId,
                     offer
                 );
@@ -84,34 +83,22 @@ namespace SimStockMarket.Market
 
         public StockSymbol GetSymbol(string symbol)
         {
-            return Collection<StockSymbol>().AsQueryable().FirstOrDefault(x => x.Symbol == symbol);
+            return _db.GetCollection<StockSymbol>().AsQueryable().FirstOrDefault(x => x.Symbol == symbol);
         }
 
         public IEnumerable<StockSymbol> GetSymbols()
         {
-            return Collection<StockSymbol>().AsQueryable().ToArray();
+            return _db.GetCollection<StockSymbol>().AsQueryable().ToArray();
         }
 
         public StockQuote GetQuote(string symbol)
         {
-            return Collection<StockQuote>().AsQueryable().FirstOrDefault(x => x.Symbol == symbol);
+            return _db.GetCollection<StockQuote>().AsQueryable().FirstOrDefault(x => x.Symbol == symbol);
         }
 
         public IEnumerable<StockQuote> GetQuotes()
         {
-            return Collection<StockQuote>().AsQueryable().ToArray();
-        }
-
-        private IMongoCollection<T> Collection<T>()
-        {
-            var type = typeof(T);
-
-            if (!Collections.ContainsKey(type))
-            {
-                Collections[type] = _db.GetCollection<T>(type.Name);
-            }
-
-            return (IMongoCollection<T>)Collections[type];
+            return _db.GetCollection<StockQuote>().AsQueryable().ToArray();
         }
 
         public void UpdateSymbol(StockSymbol symbol)
@@ -126,7 +113,7 @@ namespace SimStockMarket.Market
 
             existing.Name = symbol.Name;
 
-            Collection<StockSymbol>().ReplaceOne(x => x._id == existing._id, existing);
+            _db.GetCollection<StockSymbol>().ReplaceOne(x => x._id == existing._id, existing);
         }
     }
 }

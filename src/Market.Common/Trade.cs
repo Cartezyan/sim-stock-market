@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace SimStockMarket.Market
 {
     public class Trade
     {
-        public Guid Id { get; private set; }
+        [JsonIgnore]
+        public MongoDB.Bson.ObjectId _id;
+
         public DateTime Timestamp { get; private set; }
         public string SellerId { get; private set; }
         public string BuyerId { get; private set; }
@@ -18,7 +21,6 @@ namespace SimStockMarket.Market
             SellerId = sellerId;
             BuyerId = buyerId;
             Timestamp = DateTime.UtcNow;
-            Id = Guid.NewGuid();
         }
     }
 }
