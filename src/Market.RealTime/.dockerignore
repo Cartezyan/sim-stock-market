@@ -1,0 +1,4 @@
+!obj/Docker/publish/*
+!obj/Docker/empty/
+node_modules
+npm-debug.log

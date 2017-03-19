@@ -2,6 +2,16 @@ version: '2.1'
 
 services:
   
+  market_realtime:
+    image: market_realtime
+    build:
+      context: ./src/Market.RealTime
+      dockerfile: Dockerfile
+    ports:
+      - "1337:1337"
+    environment:
+      redis_url: redis://redis
+
   market_api:
     image: market_api
     build:
@@ -24,6 +34,7 @@ services:
       QueueHostName: queue
       MongoUrl: mongodb://mongodb:27017
       MongoDatabase: stockmarket
+      RedisHost: redis
 
   traderbot:
     image: traderbot
@@ -39,3 +50,6 @@ services:
 
   mongodb:
     image: mongo
+
+  redis:
+    image: redis

@@ -1,6 +1,8 @@
 ﻿using System;
 using Serilog;
 using MongoDB.Driver;
+using StackExchange.Redis;
+using Newtonsoft.Json;
 
 namespace SimStockMarket.Market.Handlers
 {
@@ -10,11 +12,13 @@ namespace SimStockMarket.Market.Handlers
 
         private readonly IStockMarket _market;
         private readonly IMongoDatabase _db;
+        private readonly IDatabase _redis;
 
-        public TradeRequestHandler(IStockMarket market, IMongoDatabase db)
+        public TradeRequestHandler(IStockMarket market, IMongoDatabase db, IDatabase redis)
         {
             _market = market;
             _db = db;
+            _redis = redis;
         }
 
         public void Handle(Ask ask, Bid bid)
@@ -48,11 +52,13 @@ namespace SimStockMarket.Market.Handlers
 
             _db.GetCollection<Trade>().InsertOne(trade);
 
-            Log.Information("TRADE {symbol} @ {price} ({seller} => {buyer})",
-                            trade.Symbol, trade.Price, trade.SellerId, trade.BuyerId);
-
             _market.DeleteOffer(ask);
             _market.DeleteOffer(bid);
+
+            _market.ReevaluateQuote(trade.Symbol);
+
+            Log.Information("TRADE {symbol} @ {price} ({seller} => {buyer})",
+                            trade.Symbol, trade.Price, trade.SellerId, trade.BuyerId);
         }
 
     }

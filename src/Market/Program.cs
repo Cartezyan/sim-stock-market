@@ -8,6 +8,8 @@ using SimStockMarket.Market;
 using MongoDB.Driver;
 using Serilog;
 using Serilog.Events;
+using StackExchange.Redis;
+using System.Net;
 
 namespace SimStockMarket.Market
 {
@@ -54,6 +56,7 @@ namespace SimStockMarket.Market
                     { "MongoUrl", "mongodb://localhost:27017" },
                     { "MongoDatabase", "stockmarket" },
                     { "QueueHostName", "localhost" },
+                    { "RedisHost", "localhost" },
                     { "LogLevel", LogEventLevel.Information.ToString() },
                 })
                 .AddEnvironmentVariables()
@@ -65,11 +68,27 @@ namespace SimStockMarket.Market
             return new ServiceCollection()
                 .AddSingleton<IConfiguration>(config)
                 .AddSingleton<IMongoDatabase>(ConnectToMongoDatabase)
+                .AddSingleton<ConnectionMultiplexer>(ConnectToRedis)
+                .AddSingleton<IDatabase>(GetRedisDatabase)
+                .AddSingleton<IMessageBus, MessageBus>()
                 .AddSingleton<IStockMarket, StockMarket>()
                 .AddTransient<AskHandler>()
                 .AddTransient<BidHandler>()
                 .AddTransient<TradeRequestHandler>()
                 .BuildServiceProvider();
+        }
+
+        private static IDatabase GetRedisDatabase(IServiceProvider services)
+        {
+            var redis = services.GetService<ConnectionMultiplexer>();
+            return redis.GetDatabase();
+        }
+
+        static ConnectionMultiplexer ConnectToRedis(IServiceProvider services)
+        {
+            var config = services.GetService<IConfiguration>();
+            var hostIp = Dns.GetHostAddressesAsync(config["RedisHost"]).Result[0].ToString();
+            return ConnectionMultiplexer.Connect(hostIp);
         }
 
         static IMongoDatabase ConnectToMongoDatabase(IServiceProvider services)

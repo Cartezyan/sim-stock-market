@@ -17,6 +17,7 @@ namespace SimStockMarket.Market
         StockQuote GetQuote(string symbol);
         IEnumerable<StockQuote> GetQuotes();
         void SubmitOffer(TradeOffer offer);
+        void ReevaluateQuote(string symbol);
         void UpdateSymbol(StockSymbol symbol);
     }
 
@@ -25,10 +26,12 @@ namespace SimStockMarket.Market
         private static ILogger Log = Serilog.Log.ForContext<IStockMarket>();
 
         private readonly IMongoDatabase _db;
+        private readonly IMessageBus _bus;
 
-        public StockMarket(IMongoDatabase db)
+        public StockMarket(IMongoDatabase db, IMessageBus bus)
         {
             _db = db;
+            _bus = bus;
         }
 
         public IEnumerable<TradeOffer> GetOffersBySymbol(string symbol)
@@ -42,6 +45,8 @@ namespace SimStockMarket.Market
 
             if(existing == null)
                 _db.GetCollection<StockSymbol>().InsertOne(symbol);
+
+            _bus.Publish("symbol", symbol);
         }
 
         public void DeleteOffer(TradeOffer offer)
@@ -52,6 +57,8 @@ namespace SimStockMarket.Market
                   x.TraderId == offer.TraderId
                 && x.Symbol == offer.Symbol
             );
+
+            _bus.Publish("offer_deleted", new { offer.Symbol, offer.TraderId });
 
             Log.Debug("Resolved {@offer}", offer);
         }
@@ -71,12 +78,20 @@ namespace SimStockMarket.Market
 
             // If I knew how to actually use MongoDB, I could get rid of this conditional
             if (offer._id == ObjectId.Empty)
+            {
                 _db.GetCollection<TradeOffer>().InsertOne(offer);
+            }
             else
+            {
                 _db.GetCollection<TradeOffer>().ReplaceOne(
                     x => x.Symbol == offer.Symbol && x.TraderId == offer.TraderId,
                     offer
                 );
+            }
+
+            _bus.Publish("offer", offer);
+
+            ReevaluateQuote(offer.Symbol);
 
             Log.Information("{@offer}", offer);
         }
@@ -101,6 +116,33 @@ namespace SimStockMarket.Market
             return _db.GetCollection<StockQuote>().AsQueryable().ToArray();
         }
 
+        public void ReevaluateQuote(string symbol)
+        {
+            if (string.IsNullOrWhiteSpace(symbol))
+                throw new ArgumentNullException(nameof(symbol));
+
+            var quote = GetQuote(symbol)
+                        ?? new StockQuote { Symbol = symbol };
+
+            quote.AsOf = DateTime.UtcNow;
+            quote.Ask = GetAsk(symbol);
+            quote.Bid = GetBid(symbol);
+            quote.Price = GetPrice(symbol);
+
+            if (quote._id == null)
+            {
+                _db.GetCollection<StockQuote>().InsertOne(quote);
+            }
+            else
+            {
+                _db.GetCollection<StockQuote>().ReplaceOne(x => x._id == quote._id, quote);
+            }
+
+            _bus.Publish("quote", quote);
+
+            Log.Information("{@quote}", quote);
+        }
+
         public void UpdateSymbol(StockSymbol symbol)
         {
             if (symbol == null)
@@ -114,6 +156,35 @@ namespace SimStockMarket.Market
             existing.Name = symbol.Name;
 
             _db.GetCollection<StockSymbol>().ReplaceOne(x => x._id == existing._id, existing);
+
+            _bus.Publish("symbol", symbol);
+        }
+
+        decimal? GetAsk(string symbol)
+        {
+            return GetOffersBySymbol(symbol)
+                .OfType<Ask>()
+                .OrderByDescending(x => x.Timestamp)
+                .Select(x => x.Price)
+                .FirstOrDefault();
+        }
+
+        decimal? GetBid(string symbol)
+        {
+            return GetOffersBySymbol(symbol)
+                .OfType<Bid>()
+                .OrderByDescending(x => x.Timestamp)
+                .Select(x => x.Price)
+                .FirstOrDefault();
+        }
+
+        decimal? GetPrice(string symbol)
+        {
+            return _db.GetCollection<Trade>().AsQueryable()
+                .Where(x => x.Symbol == symbol)
+                .OrderByDescending(x => x.Timestamp)
+                .Select(x => x.Price)
+                .FirstOrDefault();
         }
     }
 }

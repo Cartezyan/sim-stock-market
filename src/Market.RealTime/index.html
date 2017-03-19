@@ -1,0 +1,61 @@
+﻿<!doctype html>
+<html>
+<head>
+    <title>Real-Time Market Quotes</title>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr> 
+                <th>Symbol</th>
+                <th>Price</th>
+                <th>Bid</th>
+                <th>Ask</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script id="quote-template" type="text/template">
+        <tr>
+            <td class="symbol"></td>
+            <td class="price"></td>
+            <td class="bid"></td>
+            <td class="ask"></td>
+        </tr>
+    </script>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+
+        $(function () {
+            var $quoteList = $('table tbody');
+
+            function updateQuote(quote) {
+
+                var $quote = $('tr[symbol=' + quote.Symbol + ']', $quoteList);
+
+                if (!$quote.length) {
+                    $quote = $($('#quote-template').clone().html());
+                    $quote.attr('symbol', quote.Symbol);
+                    $quoteList.append($quote);
+                }
+
+                $('.symbol', $quote).html(quote.Symbol);
+                $('.price', $quote).html(quote.Price);
+                $('.bid', $quote).html(quote.Bid);
+                $('.ask', $quote).html(quote.Ask);
+            }
+
+            var socket = io();
+            socket.on('quote', function (message) {
+                console.log('quote: ', message);
+                var quote = JSON.parse(message); 
+                updateQuote(quote);
+            })
+        });
+    </script>
+</body>
+</html>

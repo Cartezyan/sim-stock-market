@@ -10,6 +10,7 @@
     <PackageReference Include="NewtonSoft.Json" Version="9.0.1" />
     <PackageReference Include="RabbitMQ.Client" Version="4.1.1" />
     <PackageReference Include="Serilog" Version="2.4.0" />
+    <PackageReference Include="stackexchange.redis" Version="1.2.1" />
   </ItemGroup>
 
 </Project>
