@@ -20,8 +20,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Market.Api", "src\Market.Ap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Market.Common", "src\Market.Common\Market.Common.csproj", "{89047F99-7FCF-483B-9ECF-9468ED6B606A}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Market.RealTime", "src\Market.RealTime\Market.RealTime.njsproj", "{4EFBF235-F21F-4128-96C3-2707F34881DC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

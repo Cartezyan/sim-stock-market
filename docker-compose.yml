@@ -1,14 +1,27 @@
 version: '2.1'
 
 services:
+
+  website:
+    image: website
+    build:
+      context: ./src/Market.Website
+      dockerfile: Dockerfile
+    volumes:
+      - ./src/Market.Website:/app
+#      - ./src/Market.Website/node_modules:/app/node_modules
+    ports:
+      - "127.0.0.1:5000:4200"
   
   market_realtime:
     image: market_realtime
     build:
       context: ./src/Market.RealTime
       dockerfile: Dockerfile
+    volumes:
+      - ./src/Market.RealTime/node_modules:/app/node_modules
     ports:
-      - "1337:1337"
+      - "127.0.0.1:5001:1337"
     environment:
       redis_url: redis://redis
 
@@ -18,7 +31,7 @@ services:
       context: ./src/Market.Api
       dockerfile: Dockerfile
     ports:
-      - "127.0.0.1:5000:5000"
+      - "127.0.0.1:5002:5000"
     environment:
       LogLevel: Information
       MongoUrl: mongodb://mongodb:27017
