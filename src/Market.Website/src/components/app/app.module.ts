@@ -3,8 +3,9 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { StockQuoteDataStore } from '../stock-quote-data';
+import { StockQuoteDataModule } from '../stock-quote-data';
 import { AppComponent } from './app.component';
+import { environment } from '../../environments/environment';
 
 @NgModule({
   declarations: [
@@ -14,9 +15,10 @@ import { AppComponent } from './app.component';
     BrowserModule,
     FormsModule,
     HttpModule,
-    NgbModule.forRoot()
+    NgbModule.forRoot(),
+    StockQuoteDataModule.create(environment.stubMode)
   ],
-  providers: [StockQuoteDataStore],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

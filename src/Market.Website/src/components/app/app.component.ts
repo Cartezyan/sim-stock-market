@@ -7,7 +7,7 @@ import { StockQuote, StockQuoteDataStore } from '../stock-quote-data';
   templateUrl: './app.component.html'
 })
 export class AppComponent {
-  title = 'Stock Market Simulator';
+  title = 'Real-Time Stock Quotes';
 
   quotes: StockQuote[] = [];
 

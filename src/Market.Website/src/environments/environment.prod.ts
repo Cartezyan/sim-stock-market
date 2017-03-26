@@ -1,3 +1,5 @@
 export const environment = {
-  production: true
+  production: true,
+  realtimeStockQuotesUrl: 'http://localhost:5001',
+  stubMode: false,
 };

@@ -6,12 +6,8 @@ import { Subscriber } from 'rxjs/Subscriber';
 import { StockQuote } from './model';
 import * as io from 'socket.io-client';
 
-export interface IStockQuoteDataStore {
-    quotes: Observable<Array<StockQuote>>;
-}
-
 @Injectable()
-export class StockQuoteDataStore implements IStockQuoteDataStore {
+export class StockQuoteDataStore {
 
     private _bus: SocketIOClient.Socket;
     private _quotes: StockQuote[] = [];

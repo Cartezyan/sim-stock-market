@@ -6,4 +6,5 @@
 export const environment = {
   production: false,
   realtimeStockQuotesUrl: 'http://localhost:5001',
+  stubMode: true,
 };

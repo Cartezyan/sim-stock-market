@@ -1,10 +1,22 @@
-import { NgModule } from '@angular/core';
+import { NgModule, ModuleWithProviders } from '@angular/core';
 import { StockQuoteDataStore } from './stock-quote.store';
+import { StockQuoteDataStoreStub } from './stock-quote.store.stub';
 
 @NgModule({
-  declarations: [
-    StockQuoteDataStore
-  ],
-  providers: [],
+  declarations: [ ],
+  providers: [ StockQuoteDataStore ],
 })
-export class StockQuoteDataModule { }
+export class StockQuoteDataModule {
+
+  static create(isStub: boolean): ModuleWithProviders {
+    return { ngModule: isStub ? StockQuoteDataStubModule : StockQuoteDataModule };
+  }
+
+}
+
+@NgModule({
+  declarations: [  ],
+  providers: [{ provide: StockQuoteDataStore, useClass: StockQuoteDataStoreStub }],
+})
+export class StockQuoteDataStubModule {
+}
