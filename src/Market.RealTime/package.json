@@ -7,7 +7,8 @@
     "name": "Jess Chadwick"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "watch": "nodemon -e ts --exec \"npm run build && npm start\""
   },
   "dependencies": {
     "express": "^4.15.2",
@@ -19,6 +20,7 @@
     "@types/node": "^7.0.8",
     "@types/redis": "^0.12.36",
     "@types/socket.io": "^1.4.28",
+    "nodemon": "^1.11.0",
     "typescript": "^2.2.1"
   }
 }

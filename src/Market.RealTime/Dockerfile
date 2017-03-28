@@ -1,9 +1,15 @@
 FROM node:alpine
 
+WORKDIR /app
+
+# add only package.json so docker uses the cache to build image except when a dependency has changed
+ADD package.json /app
+
+RUN npm install
+
 COPY ./ /app
 
-WORKDIR /app
-RUN npm install && npm run build
+RUN npm run build
 
 EXPOSE 1337
 
