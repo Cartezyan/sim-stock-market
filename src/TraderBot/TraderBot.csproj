@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Util\Util.csproj" />
+    <ProjectReference Include="..\Extensions.RabbitMQ\Extensions.RabbitMQ.csproj" />
   </ItemGroup>
 
   <ItemGroup>

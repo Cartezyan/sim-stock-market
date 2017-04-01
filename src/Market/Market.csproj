@@ -20,8 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Extensions.MongoDb\Extensions.MongoDb.csproj" />
+    <ProjectReference Include="..\Extensions.RabbitMQ\Extensions.RabbitMQ.csproj" />
+    <ProjectReference Include="..\Extensions.Redis\Extensions.Redis.csproj" />
     <ProjectReference Include="..\Market.Common\Market.Common.csproj" />
-    <ProjectReference Include="..\Util\Util.csproj" />
   </ItemGroup>
 
   <ItemGroup>

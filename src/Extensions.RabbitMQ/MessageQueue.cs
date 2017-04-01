@@ -10,7 +10,7 @@ namespace SimStockMarket.Extensions.RabbitMQ
     public interface IMessageQueue
     {
         void Publish(string action, object message);
-        void Subscribe<TMessage>(Action<TMessage> handler);
+        IMessageQueue Subscribe<TMessage>(Action<TMessage> handler);
     }
 
     public class MessageQueue : IMessageQueue
@@ -42,7 +42,7 @@ namespace SimStockMarket.Extensions.RabbitMQ
             Log.Verbose("***TX*** ({exchange}:{action}) {body}", _exchange, action, body);
         }
 
-        public void Subscribe<TMessage>(Action<TMessage> handler)
+        public IMessageQueue Subscribe<TMessage>(Action<TMessage> handler)
         {
             var routingKey = typeof(TMessage).Name.ToLower();
 
@@ -81,6 +81,8 @@ namespace SimStockMarket.Extensions.RabbitMQ
             _channel.BasicConsume(queue: _exchange,
                                 noAck: true,
                                 consumer: consumer);
+
+            return this;
         }
     }
 }

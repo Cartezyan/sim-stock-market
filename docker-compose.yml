@@ -9,7 +9,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./src/Market.Website:/app
-#      - ./src/Market.Website/node_modules:/app/node_modules
     ports:
       - "127.0.0.1:5000:4200"
   
@@ -44,7 +43,8 @@ services:
       dockerfile: Dockerfile
     environment:
       LogLevel: Information
-      QueueHostName: queue
+      QueueHost: queue
+      QueueName: stockmarket
       MongoUrl: mongodb://mongodb:27017
       MongoDatabase: stockmarket
       RedisHost: redis
@@ -56,7 +56,8 @@ services:
       dockerfile: Dockerfile
     environment:
       LogLevel: Warning
-      QueueHostName: queue
+      QueueHost: queue
+      QueueName: stockmarket
   
   queue:
     image: rabbitmq:alpine

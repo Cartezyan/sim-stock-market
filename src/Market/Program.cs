@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SimStockMarket.Market.Handlers;
-using SimStockMarket.Market;
 using MongoDB.Driver;
 using Serilog;
 using Serilog.Events;
 using StackExchange.Redis;
-using System.Net;
+using SimStockMarket.Extensions.Redis;
+using SimStockMarket.Extensions.MongoDb;
+using SimStockMarket.Extensions.RabbitMQ;
+using SimStockMarket.Market.Handlers;
 
 namespace SimStockMarket.Market
 {
@@ -33,19 +35,16 @@ namespace SimStockMarket.Market
             Log.Information("==== Stock Market ====");
 
             var services = ConfigureServices(config);
+            var queue = 
+                services.GetService<IMessageQueue>()
+                    .Subscribe<Ask>(ask => services.GetService<AskHandler>().Handle(ask))
+                    .Subscribe<Bid>(bid => services.GetService<BidHandler>().Handle(bid));
 
-            using (var connection = MessageQueue.Connect(config["QueueHostName"]))
-            using (var queue = MessageQueue.Connect(connection, "stockmarket"))
+            Log.Information("Market started");
+
+            while (true)
             {
-                queue.Subscribe<Ask>(ask => services.GetService<AskHandler>().Handle(ask));
-                queue.Subscribe<Bid>(bid => services.GetService<BidHandler>().Handle(bid));
-
-                Log.Information("Market started");
-
-                while (true)
-                {
-                    Thread.Sleep(100);
-                }
+                Thread.Sleep(100);
             }
         }
 
@@ -55,7 +54,8 @@ namespace SimStockMarket.Market
                 .AddInMemoryCollection(new Dictionary<string, string> {
                     { "MongoUrl", "mongodb://localhost:27017" },
                     { "MongoDatabase", "stockmarket" },
-                    { "QueueHostName", "localhost" },
+                    { "QueueHost", "localhost" },
+                    { "QueueName", "stockmarket" },
                     { "RedisHost", "localhost" },
                     { "LogLevel", LogEventLevel.Information.ToString() },
                 })
@@ -66,11 +66,9 @@ namespace SimStockMarket.Market
         static IServiceProvider ConfigureServices(IConfiguration config)
         {
             return new ServiceCollection()
-                .AddSingleton<IConfiguration>(config)
-                .AddSingleton<IMongoDatabase>(ConnectToMongoDatabase)
-                .AddSingleton<ConnectionMultiplexer>(ConnectToRedis)
-                .AddSingleton<IDatabase>(GetRedisDatabase)
-                .AddSingleton<IMessageBus, MessageBus>()
+                .AddRedis(config["RedisHost"])
+                .AddMessageQueue(config["QueueHost"], config["QueueName"])
+                .AddMongoDb(config["MongoUrl"], config["MongoDatabase"])
                 .AddSingleton<IStockMarket, StockMarket>()
                 .AddTransient<AskHandler>()
                 .AddTransient<BidHandler>()

@@ -4,6 +4,7 @@ using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
+using SimStockMarket.Extensions.RabbitMQ;
 
 namespace SimStockMarket.TraderBot
 {
@@ -35,13 +36,14 @@ namespace SimStockMarket.TraderBot
 
             Log.Information("Starting Trade Bot {traderId}...", traderId);
 
-            var queueHost = config["QueueHostName"];
+            var queueHost = config["QueueHost"];
 
             Log.Verbose("Connecting to message host {queueHost}...", queueHost);
 
-            using (var connection = MessageQueue.Connect(queueHost))
-            using (var queue = MessageQueue.Connect(connection, "stockmarket"))
+            using (var connection = MessageQueueFactory.Connect(queueHost))
+            using (var channel = connection.CreateModel())
             {
+                var queue = MessageQueueFactory.CreateMessageQueue(channel, config["QueueName"]);
                 var trader = new TradeGenerator(traderId);
 
                 while (true)
