@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <AssemblyName>SimStockMarket.Extensions.RabbitMQ</AssemblyName>
+    <RootNamespace>SimStockMarket.Extensions.RabbitMQ</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.0" />
+    <PackageReference Include="RabbitMQ.Client" Version="4.1.1" />
+    <PackageReference Include="Serilog" Version="2.4.0" />
+    <PackageReference Include="newtonsoft.json" Version="9.0.1" />
+  </ItemGroup>
+
+</Project>
