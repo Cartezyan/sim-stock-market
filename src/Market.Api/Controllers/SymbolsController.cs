@@ -1,16 +1,18 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace SimStockMarket.Market.Api.Controllers
 {
     [Route("symbols")]
     public class SymbolsController : Controller
     {
-        private readonly IStockMarket _market;
+        private readonly IMongoCollection<StockSymbol> _symbols;
 
-        public SymbolsController(IStockMarket market)
+        public SymbolsController(IMongoCollection<StockSymbol> symbols)
         {
-            _market = market;
+            _symbols = symbols;
         }
 
         /// <summary>
@@ -20,7 +22,7 @@ namespace SimStockMarket.Market.Api.Controllers
         [HttpGet("")]
         public IEnumerable<StockSymbol> Symbols()
         {
-            return _market.GetSymbols();
+            return _symbols.AsQueryable();
         }
 
         /// <summary>
@@ -30,7 +32,7 @@ namespace SimStockMarket.Market.Api.Controllers
         [HttpGet("{symbol}", Name = "GetSymbol")]
         public StockSymbol Symbol(string symbol)
         {
-            return _market.GetSymbol(symbol);
+            return _symbols.Find(x => x.Symbol == symbol).FirstOrDefault();
         }
 
         /// <summary>
@@ -40,7 +42,7 @@ namespace SimStockMarket.Market.Api.Controllers
         [HttpPost("")]
         public IActionResult Post([FromBody]StockSymbol symbol)
         {
-            _market.AddSymbol(symbol);
+            Upsert(symbol);
             return Ok();
         }
 
@@ -52,7 +54,8 @@ namespace SimStockMarket.Market.Api.Controllers
         [HttpPut("{symbol}")]
         public IActionResult Put(string symbol, [FromBody]StockSymbol update)
         {
-            _market.UpdateSymbol(update);
+            update.Symbol = symbol;
+            Upsert(update);
             return Ok();
         }
 
@@ -63,7 +66,20 @@ namespace SimStockMarket.Market.Api.Controllers
         [HttpDelete("{symbol}")]
         public IActionResult Delete(string symbol)
         {
+            _symbols.DeleteOne(x => x.Symbol == symbol);
             return Ok();
+        }
+
+        void Upsert(StockSymbol symbol)
+        {
+            if (symbol._id == ObjectId.Empty)
+            {
+                _symbols.InsertOne(symbol);
+            }
+            else
+            {
+                _symbols.ReplaceOne(x => x.Symbol == symbol.Symbol, symbol);
+            }
         }
     }
 }

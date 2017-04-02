@@ -7,5 +7,7 @@ export const environment = {
   production: false,
   realtimeStockQuotesUrl: 'http://localhost:5002',
   stockQuoteApiUrl: 'http://localhost:5001/quotes',
+  stockQuoteApiDocsUrl: 'http://localhost:5001/swagger',
+  stockSymbolsApiUrl: 'http://localhost:5001/symbols',
   stubMode: false,
 };

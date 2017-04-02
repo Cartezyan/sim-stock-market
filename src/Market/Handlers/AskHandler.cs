@@ -1,19 +1,21 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Serilog;
+using MongoDB.Driver;
 
 namespace SimStockMarket.Market.Handlers
 {
-    public class AskHandler : Handler<Ask>
+    public class AskHandler : TradeOfferHandler<Ask>
     {
         private static ILogger Log = Serilog.Log.ForContext<AskHandler>();
 
-        private readonly IStockMarket _market;
         private readonly TradeRequestHandler _tradeHandler;
 
-        public AskHandler(IStockMarket market, TradeRequestHandler tradeHandler)
+        public AskHandler(
+                IMessageBus bus,
+                IMongoCollection<TradeOffer> offers,
+                TradeRequestHandler tradeHandler
+            ) : base(bus, offers, tradeHandler)
         {
-            _market = market;
             _tradeHandler = tradeHandler;
         }
 
@@ -26,7 +28,7 @@ namespace SimStockMarket.Market.Handlers
             if (bid == null || bid.TraderId == ask.TraderId)
             {
                 Log.Debug("No buyer for {symbol} @ {price} - ask submitted.", ask.Symbol, ask.Price);
-                _market.SubmitOffer(ask);
+                SubmitOffer(ask);
             }
             else
             {
@@ -39,7 +41,7 @@ namespace SimStockMarket.Market.Handlers
         {
             Log.Verbose("Finding buyer for {@ask}...", ask);
 
-            return _market.GetOffersBySymbol(ask?.Symbol)
+            return GetOffersBySymbol(ask?.Symbol)
                 .OfType<Bid>()
                 .OrderBy(x => x.Price)
                 .ThenBy(x => x.Timestamp)

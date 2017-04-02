@@ -1,16 +1,17 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
+using System.Linq;
 
 namespace SimStockMarket.Market.Api.Controllers
 {
     [Route("quotes")]
     public class QuotesController : Controller
     {
-        private readonly IStockMarket market;
+        private readonly IMongoCollection<StockQuote> _quotes;
 
-        public QuotesController(IStockMarket market)
+        public QuotesController(IMongoCollection<StockQuote> quotes)
         {
-            this.market = market;
+            _quotes = quotes;
         }
 
         /// <summary>
@@ -18,9 +19,9 @@ namespace SimStockMarket.Market.Api.Controllers
         /// </summary>
         /// <returns>All available Stock Quotes</returns>
         [HttpGet]
-        public IEnumerable<StockQuote> Quotes()
+        public IQueryable<StockQuote> Quotes()
         {
-            return market.GetQuotes();
+            return _quotes.AsQueryable();
         }
 
         /// <summary>
@@ -30,7 +31,7 @@ namespace SimStockMarket.Market.Api.Controllers
         [HttpGet("{symbol}")]
         public StockQuote Quote(string symbol)
         {
-            return market.GetQuote(symbol);
+            return _quotes.Find(x => x.Symbol == symbol).FirstOrDefault();
         }
     }
 }

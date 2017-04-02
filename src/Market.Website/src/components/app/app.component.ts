@@ -12,7 +12,7 @@ export class AppComponent {
 
   quotes: StockQuote[] = [];
 
-  stockQuoteApiUrl = environment.stockQuoteApiUrl + '/swagger';
+  stockQuoteApiUrl = environment.stockQuoteApiDocsUrl;
 
   constructor(private quotesStore: StockQuoteDataStore) {
     quotesStore.quotes.subscribe((quotes) => this.quotes = quotes);

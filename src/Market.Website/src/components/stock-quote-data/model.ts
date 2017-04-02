@@ -1,8 +1,9 @@
 export interface StockQuote {
-    Symbol: string;
-    AsOf?: string;
-    AsOfDate?: Date;
-    Price?: number;
-    Bid?: number;
-    Ask?: number;
+    name?: string;
+    symbol: string;
+    asOf?: string;
+    asOfDate?: Date;
+    price?: number;
+    bid?: number;
+    ask?: number;
 }

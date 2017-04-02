@@ -16,10 +16,10 @@
       </thead>
       <tbody>
         <tr *ngFor="let quote of quotes">
-          <td class="symbol">{{quote.Symbol}}</td>
-          <td class="price">{{quote.Price | currency:'USD':true }}</td>
-          <td class="bid">{{quote.Bid | currency:'USD':true }}</td>
-          <td class="ask">{{quote.Ask | currency:'USD':true }}</td>
+          <td class="symbol">{{quote.symbol}}</td>
+          <td class="price">{{quote.price | currency:'USD':true }}</td>
+          <td class="bid">{{quote.bid | currency:'USD':true }}</td>
+          <td class="ask">{{quote.ask | currency:'USD':true }}</td>
         </tr>
       </tbody>
     </table>

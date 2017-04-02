@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Serilog;
 using MongoDB.Driver;
-using StackExchange.Redis;
-using Newtonsoft.Json;
+using MongoDB.Driver.Linq;
 
 namespace SimStockMarket.Market.Handlers
 {
@@ -10,15 +10,22 @@ namespace SimStockMarket.Market.Handlers
     {
         private static ILogger Log = Serilog.Log.ForContext<BidHandler>();
 
-        private readonly IStockMarket _market;
-        private readonly IMongoDatabase _db;
-        private readonly IDatabase _redis;
+        private readonly IMessageBus _bus;
+        private readonly IMongoCollection<Trade> _trades;
+        private readonly IMongoCollection<StockQuote> _quotes;
+        private readonly IMongoCollection<TradeOffer> _offers;
 
-        public TradeRequestHandler(IStockMarket market, IMongoDatabase db, IDatabase redis)
+        public TradeRequestHandler(
+                IMessageBus bus,
+                IMongoCollection<Trade> trades,
+                IMongoCollection<TradeOffer> offers,
+                IMongoCollection<StockQuote> quotes
+            )
         {
-            _market = market;
-            _db = db;
-            _redis = redis;
+            _bus = bus;
+            _offers = offers;
+            _trades = trades;
+            _quotes = quotes;
         }
 
         public void Handle(Ask ask, Bid bid)
@@ -50,15 +57,92 @@ namespace SimStockMarket.Market.Handlers
 
             var trade = new Trade(ask.Symbol, ask.Price, ask.TraderId, bid.TraderId);
 
-            _db.GetCollection<Trade>().InsertOne(trade);
+            _trades.InsertOne(trade);
 
-            _market.DeleteOffer(ask);
-            _market.DeleteOffer(bid);
+            DeleteOffer(ask);
+            DeleteOffer(bid);
 
-            _market.ReevaluateQuote(trade.Symbol);
+            ReevaluateQuote(trade.Symbol);
 
             Log.Information("TRADE {symbol} @ {price} ({seller} => {buyer})",
                             trade.Symbol, trade.Price, trade.SellerId, trade.BuyerId);
+        }
+
+        protected internal void ReevaluateQuote(string symbol)
+        {
+            if (string.IsNullOrWhiteSpace(symbol))
+                throw new ArgumentNullException(nameof(symbol));
+
+            var quote = GetQuote(symbol) ?? new StockQuote { Symbol = symbol };
+
+            quote.AsOf = DateTime.UtcNow;
+            quote.Ask = GetAsk(symbol);
+            quote.Bid = GetBid(symbol);
+            quote.Price = GetPrice(symbol);
+
+            if (quote._id == null)
+            {
+                _quotes.InsertOne(quote);
+            }
+            else
+            {
+                _quotes.ReplaceOne(x => x._id == quote._id, quote);
+            }
+
+            _bus.Publish("quote", quote);
+
+            Log.Information("{@quote}", quote);
+        }
+
+        decimal? GetPrice(string symbol)
+        {
+            return _trades.AsQueryable()
+                .Where(x => x.Symbol == symbol)
+                .OrderByDescending(x => x.Timestamp)
+                .Select(x => x.Price)
+                .FirstOrDefault();
+        }
+
+        decimal? GetAsk(string symbol)
+        {
+            return GetOffersBySymbol(symbol)
+                .OfType<Ask>()
+                .OrderByDescending(x => x.Timestamp)
+                .Select(x => x.Price)
+                .FirstOrDefault();
+        }
+
+        decimal? GetBid(string symbol)
+        {
+            return GetOffersBySymbol(symbol)
+                .OfType<Bid>()
+                .OrderByDescending(x => x.Timestamp)
+                .Select(x => x.Price)
+                .FirstOrDefault();
+        }
+
+        StockQuote GetQuote(string symbol)
+        {
+            return _quotes.Find(x => x.Symbol == symbol).FirstOrDefault();
+        }
+
+        IQueryable<TradeOffer> GetOffersBySymbol(string symbol)
+        {
+            return _offers.AsQueryable().Where(x => x.Symbol == symbol);
+        }
+
+        void DeleteOffer(TradeOffer offer)
+        {
+            Log.Verbose("Resolving {@offer}...", offer);
+
+            _offers.DeleteOne(x =>
+                  x.TraderId == offer.TraderId
+                && x.Symbol == offer.Symbol
+            );
+
+            _bus.Publish("offer_deleted", new { offer.Symbol, offer.TraderId });
+
+            Log.Debug("Resolved {@offer}", offer);
         }
 
     }

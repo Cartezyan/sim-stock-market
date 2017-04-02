@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 using MongoDB.Driver;
 using Swashbuckle.AspNetCore.Swagger;
+using SimStockMarket.Extensions.MongoDb;
 
 namespace SimStockMarket.Market.Api
 {
@@ -44,9 +45,14 @@ namespace SimStockMarket.Market.Api
                 options.IncludeXmlComments(filePath);
                 options.DescribeAllEnumsAsStrings();
             });
+
             services.AddMvc();
-            services.AddSingleton<IMongoDatabase>(ConnectToMongoDatabase);
-            services.AddSingleton<IStockMarket, StockMarket>();
+
+            services.AddCors();
+
+            services.AddMongoDb(Configuration["MongoUrl"], Configuration["MongoDatabase"])
+                    .AddMongoCollection<StockQuote>()
+                    .AddMongoCollection<StockSymbol>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,6 +60,8 @@ namespace SimStockMarket.Market.Api
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
+            app.UseCors(_ => _.AllowAnyOrigin());
 
             app.UseMvc();
 
@@ -66,13 +74,6 @@ namespace SimStockMarket.Market.Api
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "V1 Docs");
             });
-        }
-
-        IMongoDatabase ConnectToMongoDatabase(IServiceProvider services)
-        {
-            var mongodb = new MongoClient(Configuration["MongoUrl"]);
-            var db = mongodb.GetDatabase(Configuration["MongoDatabase"]);
-            return db;
         }
     }
 }

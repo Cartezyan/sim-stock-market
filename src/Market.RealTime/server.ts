@@ -2,10 +2,13 @@
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
 let redis = require("redis");
+let cors = require("cors");
 
 var port = process.env.port || 1337;
 var redisUrl = process.env.redis_url || "redis://localhost";
 var bus = redis.createClient(redisUrl);
+
+app.use(cors());
 
 io.on("connection", function (socket) {
     console.log(`client connected: ${socket}`);

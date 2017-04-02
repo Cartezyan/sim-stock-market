@@ -7,13 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MongoDb.Driver" Version="2.4.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="Serilog" Version="2.4.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Extensions.MongoDb\Extensions.MongoDb.csproj" />
-    <ProjectReference Include="..\Extensions.RabbitMQ\Extensions.RabbitMQ.csproj" />
-    <ProjectReference Include="..\Extensions.Redis\Extensions.Redis.csproj" />
   </ItemGroup>
 
 </Project>

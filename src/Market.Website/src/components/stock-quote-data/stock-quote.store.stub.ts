@@ -40,16 +40,16 @@ export class StockQuoteDataStoreStub extends StockQuoteDataStore {
               asOf = new Date();
 
         return {
-            Symbol: symbol,
-            Price: price,
-            AsOf: asOf.toDateString(),
-            AsOfDate: asOf,
-            Ask: price + 0.01,
-            Bid: price - 0.01,
+            symbol: symbol,
+            price: price,
+            asOf: asOf.toDateString(),
+            asOfDate: asOf,
+            ask: price + 0.01,
+            bid: price - 0.01,
         };
     }
 
-    private update({ Symbol: symbol, Bid: bid, Ask: ask, Price: price }: StockQuote): StockQuote {
+    private update({ symbol: symbol, bid: bid, ask: ask, price: price }: StockQuote): StockQuote {
 
         // lower the ask OR raise the bid
         if (Math.random() > .50) {
@@ -68,12 +68,12 @@ export class StockQuoteDataStoreStub extends StockQuoteDataStore {
         const asOf = new Date();
 
         return {
-            Symbol: symbol,
-            AsOf: asOf.toDateString(),
-            AsOfDate: asOf,
-            Price: price,
-            Bid: bid,
-            Ask: ask,
+            symbol: symbol,
+            asOf: asOf.toDateString(),
+            asOfDate: asOf,
+            price: price,
+            bid: bid,
+            ask: ask,
         };
     }
 

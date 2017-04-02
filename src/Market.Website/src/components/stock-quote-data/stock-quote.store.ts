@@ -16,13 +16,11 @@ export class StockQuoteDataStore {
     private _quotesStream: Observable<StockQuote[]>;
 
     get quotes(): Observable<StockQuote[]> {
-        if(!this._quotes) {
-            this._quotes = [];
-            this.getQuotes(environment.stockQuoteApiUrl)
-                .then(quotes => this._quotes = quotes);
-        }
-
         if (!this._quotesStream) {
+            this._quotes = [];
+            this.loadQuotes(environment.stockSymbolsApiUrl)
+                .then(() => this.loadQuotes(environment.stockQuoteApiUrl));
+
             this._quotesStream = this.startRealTimeQuotes(environment.realtimeStockQuotesUrl);
         }
 
@@ -32,10 +30,15 @@ export class StockQuoteDataStore {
     constructor(private _http: Http) {
     }
 
-    private getQuotes(url: string): Promise<StockQuote[]> {
+    private loadQuotes(url: string): Promise<void> {
+        return this.get<StockQuote[]>(url)
+            .then(symbols => symbols.forEach(this.updateQuote.bind(this)));
+    }
+
+    private get<T>(url: string): Promise<T> {
         return this._http.get(url)
             .toPromise()
-            .then(x => x.json());
+            .then(x => <T>x.json());
     }
 
     private startRealTimeQuotes(url: string): Observable<StockQuote[]> {
@@ -60,7 +63,7 @@ export class StockQuoteDataStore {
     }
 
     private updateQuote(quote: StockQuote): boolean {
-        let existing = this._quotes.find(x => x.Symbol === quote.Symbol);
+        let existing = this._quotes.find(x => x.symbol === quote.symbol);
 
         if (!existing) {
             this._quotes.push(quote);
@@ -68,15 +71,15 @@ export class StockQuoteDataStore {
         }
 
         // Ignore stale updates
-        if (existing.AsOf > quote.AsOf) {
+        if (existing.asOf > quote.asOf) {
             return false;
         }
 
-        existing.AsOf = quote.AsOf;
-        existing.AsOfDate = (quote.AsOf) ? new Date(quote.AsOf) : null;
-        existing.Ask = quote.Ask;
-        existing.Bid = quote.Bid;
-        existing.Price = quote.Price;
+        existing.asOf = quote.asOf;
+        existing.asOfDate = (quote.asOf) ? new Date(quote.asOf) : null;
+        existing.ask = quote.ask;
+        existing.bid = quote.bid;
+        existing.price = quote.price;
 
         return true;
     }

@@ -12,6 +12,8 @@ using SimStockMarket.Extensions.Redis;
 using SimStockMarket.Extensions.MongoDb;
 using SimStockMarket.Extensions.RabbitMQ;
 using SimStockMarket.Market.Handlers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace SimStockMarket.Market
 {
@@ -31,6 +33,12 @@ namespace SimStockMarket.Market
                 .MinimumLevel.ControlledBy(logLevelSwitch)
                 .WriteTo.LiterateConsole()
                 .CreateLogger();
+
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
+                Formatting = Formatting.None,
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
 
             Log.Information("==== Stock Market ====");
 
@@ -69,7 +77,10 @@ namespace SimStockMarket.Market
                 .AddRedis(config["RedisHost"])
                 .AddMessageQueue(config["QueueHost"], config["QueueName"])
                 .AddMongoDb(config["MongoUrl"], config["MongoDatabase"])
-                .AddSingleton<IStockMarket, StockMarket>()
+                    .AddMongoCollection<StockQuote>()
+                    .AddMongoCollection<StockSymbol>()
+                    .AddMongoCollection<Trade>()
+                    .AddMongoCollection<TradeOffer>()
                 .AddTransient<AskHandler>()
                 .AddTransient<BidHandler>()
                 .AddTransient<TradeRequestHandler>()
