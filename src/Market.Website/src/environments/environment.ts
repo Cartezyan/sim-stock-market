@@ -5,6 +5,7 @@
 
 export const environment = {
   production: false,
-  realtimeStockQuotesUrl: 'http://localhost:5001',
-  stubMode: true,
+  realtimeStockQuotesUrl: 'http://localhost:5002',
+  stockQuoteApiUrl: 'http://localhost:5001/quotes',
+  stubMode: false,
 };

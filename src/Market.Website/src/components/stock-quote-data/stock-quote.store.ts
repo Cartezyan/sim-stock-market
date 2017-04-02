@@ -1,8 +1,10 @@
 import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
+import { Http } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { Subscriber } from 'rxjs/Subscriber';
+import 'rxjs/add/operator/toPromise';
 import { StockQuote } from './model';
 import * as io from 'socket.io-client';
 
@@ -10,12 +12,34 @@ import * as io from 'socket.io-client';
 export class StockQuoteDataStore {
 
     private _bus: SocketIOClient.Socket;
-    private _quotes: StockQuote[] = [];
+    private _quotes: StockQuote[] = null;
     private _quotesStream: Observable<StockQuote[]>;
 
     get quotes(): Observable<StockQuote[]> {
+        if(!this._quotes) {
+            this._quotes = [];
+            this.getQuotes(environment.stockQuoteApiUrl)
+                .then(quotes => this._quotes = quotes);
+        }
 
-        this._bus = io.connect(environment.realtimeStockQuotesUrl);
+        if (!this._quotesStream) {
+            this._quotesStream = this.startRealTimeQuotes(environment.realtimeStockQuotesUrl);
+        }
+
+        return this._quotesStream;
+    }
+
+    constructor(private _http: Http) {
+    }
+
+    private getQuotes(url: string): Promise<StockQuote[]> {
+        return this._http.get(url)
+            .toPromise()
+            .then(x => x.json());
+    }
+
+    private startRealTimeQuotes(url: string): Observable<StockQuote[]> {
+        this._bus = io.connect(url);
 
         return new Observable<StockQuote[]>(observer => {
 

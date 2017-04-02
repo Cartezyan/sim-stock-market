@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { StockQuote, StockQuoteDataStore } from '../stock-quote-data';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,8 @@ export class AppComponent {
   title = 'Real-Time Stock Quotes';
 
   quotes: StockQuote[] = [];
+
+  stockQuoteApiUrl = environment.stockQuoteApiUrl + '/swagger';
 
   constructor(private quotesStore: StockQuoteDataStore) {
     quotesStore.quotes.subscribe((quotes) => this.quotes = quotes);

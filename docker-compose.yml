@@ -11,6 +11,18 @@ services:
       - ./src/Market.Website:/app
     ports:
       - "127.0.0.1:5000:4200"
+
+  market_api:
+    image: market_api
+    build:
+      context: ./src/Market.Api
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:5001:5000"
+    environment:
+      LogLevel: Information
+      MongoUrl: mongodb://mongodb:27017
+      MongoDatabase: stockmarket
   
   market_realtime:
     image: market_realtime
@@ -20,21 +32,9 @@ services:
     volumes:
       - ./src/Market.RealTime/node_modules:/app/node_modules
     ports:
-      - "127.0.0.1:5001:1337"
+      - "127.0.0.1:5002:1337"
     environment:
       redis_url: redis://redis
-
-  market_api:
-    image: market_api
-    build:
-      context: ./src/Market.Api
-      dockerfile: Dockerfile
-    ports:
-      - "127.0.0.1:5002:5000"
-    environment:
-      LogLevel: Information
-      MongoUrl: mongodb://mongodb:27017
-      MongoDatabase: stockmarket
 
   market:
     image: market
