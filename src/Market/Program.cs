@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MongoDB.Driver;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Serilog;
 using Serilog.Events;
-using StackExchange.Redis;
 using SimStockMarket.Extensions.Redis;
 using SimStockMarket.Extensions.MongoDb;
 using SimStockMarket.Extensions.RabbitMQ;
 using SimStockMarket.Market.Handlers;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace SimStockMarket.Market
 {
@@ -22,6 +19,41 @@ namespace SimStockMarket.Market
         static void Main(string[] args)
         {
             var config = Configure();
+            var services = ConfigureServices(config);
+
+            StartMarket(services);
+        }
+
+        static void StartMarket(IServiceProvider services)
+        {
+            Log.Information("==== Stock Market ====");
+
+            var queue =
+                services.GetService<IMessageQueue>()
+                    .Subscribe<Ask>(ask => services.GetService<AskHandler>().Handle(ask))
+                    .Subscribe<Bid>(bid => services.GetService<BidHandler>().Handle(bid));
+
+            Log.Information("Market started");
+
+            while (true)
+            {
+                Thread.Sleep(100);
+            }
+        }
+
+        static IConfiguration Configure()
+        {
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string> {
+                    { "MongoUrl", "mongodb://localhost:27017" },
+                    { "MongoDatabase", "stockmarket" },
+                    { "QueueHost", "localhost" },
+                    { "QueueName", "stockmarket" },
+                    { "RedisHost", "localhost" },
+                    { "LogLevel", LogEventLevel.Information.ToString() },
+                })
+                .AddEnvironmentVariables()
+                .Build();
 
             var logLevel = LogEventLevel.Warning;
 
@@ -40,35 +72,7 @@ namespace SimStockMarket.Market
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
 
-            Log.Information("==== Stock Market ====");
-
-            var services = ConfigureServices(config);
-            var queue = 
-                services.GetService<IMessageQueue>()
-                    .Subscribe<Ask>(ask => services.GetService<AskHandler>().Handle(ask))
-                    .Subscribe<Bid>(bid => services.GetService<BidHandler>().Handle(bid));
-
-            Log.Information("Market started");
-
-            while (true)
-            {
-                Thread.Sleep(100);
-            }
-        }
-
-        static IConfiguration Configure()
-        {
-            return new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string> {
-                    { "MongoUrl", "mongodb://localhost:27017" },
-                    { "MongoDatabase", "stockmarket" },
-                    { "QueueHost", "localhost" },
-                    { "QueueName", "stockmarket" },
-                    { "RedisHost", "localhost" },
-                    { "LogLevel", LogEventLevel.Information.ToString() },
-                })
-                .AddEnvironmentVariables()
-                .Build();
+            return config;
         }
 
         static IServiceProvider ConfigureServices(IConfiguration config)
@@ -85,27 +89,6 @@ namespace SimStockMarket.Market
                 .AddTransient<BidHandler>()
                 .AddTransient<TradeRequestHandler>()
                 .BuildServiceProvider();
-        }
-
-        private static IDatabase GetRedisDatabase(IServiceProvider services)
-        {
-            var redis = services.GetService<ConnectionMultiplexer>();
-            return redis.GetDatabase();
-        }
-
-        static ConnectionMultiplexer ConnectToRedis(IServiceProvider services)
-        {
-            var config = services.GetService<IConfiguration>();
-            var hostIp = Dns.GetHostAddressesAsync(config["RedisHost"]).Result[0].ToString();
-            return ConnectionMultiplexer.Connect(hostIp);
-        }
-
-        static IMongoDatabase ConnectToMongoDatabase(IServiceProvider services)
-        {
-            var config = services.GetService<IConfiguration>();
-            var mongodb = new MongoClient(config["MongoUrl"]);
-            var db = mongodb.GetDatabase(config["MongoDatabase"]);
-            return db;
         }
     }
 }
