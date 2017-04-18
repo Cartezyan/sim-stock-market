@@ -1,3 +1,11 @@
+sudo: required
+
+services:
+  - docker
+
+script:
+- docker-compose -f docker-compose.ci.build.yml up
+
 addons:
   sonarqube:
     organization: "jchadwick-github"
