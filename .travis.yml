@@ -1,0 +1,3 @@
+addons:
+  sonarqube:
+    organization: "jchadwick-github"
